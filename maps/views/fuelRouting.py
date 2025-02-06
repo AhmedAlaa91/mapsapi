@@ -72,9 +72,21 @@ class OptimizeFuelRoute(View):
                     stops.append(best_stop)
                     total_cost += (VEHICLE_RANGE / FUEL_EFFICIENCY) * best_stop['Retail Price']
                     remaining_range = VEHICLE_RANGE  # Refuel
+
+
+        
+        ORS_URL_GEOJSON = 'https://api.openrouteservice.org/v2/directions/driving-car/geojson'
+        headers = {'Authorization': ORS_API_KEY, 'Content-Type': 'application/json'}
+        dataGeoJson = {"coordinates": [start_coords, end_coords], "format": "json"}
+        
+        responseGeoJson = requests.post(ORS_URL_GEOJSON, json=dataGeoJson, headers=headers)
+        if responseGeoJson.status_code != 200:
+            return JsonResponse({'error': 'Failed to fetch route data'}, status=500)
+        
+        route_data_geoJson = responseGeoJson.json()
         
         return JsonResponse({
-            'route': route_data['routes'][0],
+            'route': route_data_geoJson,
             'total_distance':segment_distance,
             'route_states_names': list(route_states_names),
             'route_states': list(route_states),
